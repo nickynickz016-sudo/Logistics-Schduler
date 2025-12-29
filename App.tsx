@@ -10,16 +10,18 @@ import { ImportClearance } from './components/ImportClearance';
 import { ResourceManager } from './components/ResourceManager';
 import { CapacityManager } from './components/CapacityManager';
 import { UserManagement } from './components/UserManagement';
+import { Login } from './components/Login';
 import { UserRole, Job, JobStatus, UserProfile, Personnel, Vehicle, SystemSettings, ConfirmationStatus } from './types';
 import { Bell, Search, Menu } from 'lucide-react';
 
 const INITIAL_USERS: UserProfile[] = [
-  { id: '1', employeeId: 'ADM-001', name: 'Admin Controller', role: UserRole.ADMIN, avatar: 'https://picsum.photos/seed/writer-admin/100', status: 'Active' },
-  { id: '2', employeeId: 'USR-001', name: 'Writer User 1', role: UserRole.USER, avatar: 'https://picsum.photos/seed/wu1/100', status: 'Active' },
-  { id: '3', employeeId: 'USR-002', name: 'Writer User 2', role: UserRole.USER, avatar: 'https://picsum.photos/seed/wu2/100', status: 'Active' },
+  { id: '1', employeeId: 'ADM-001', name: 'Admin Controller', username: 'Admin', password: 'Admin', role: UserRole.ADMIN, avatar: 'https://picsum.photos/seed/writer-admin/100', status: 'Active' },
+  { id: '2', employeeId: 'USR-001', name: 'Writer User 1', username: 'user1', password: 'password123', role: UserRole.USER, avatar: 'https://picsum.photos/seed/wu1/100', status: 'Active' },
+  { id: '3', employeeId: 'USR-002', name: 'Writer User 2', username: 'user2', password: 'password123', role: UserRole.USER, avatar: 'https://picsum.photos/seed/wu2/100', status: 'Active' },
 ];
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile>(INITIAL_USERS[0]);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'approvals' | 'ai' | 'warehouse' | 'import-clearance' | 'resources' | 'capacity' | 'users'>('dashboard');
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -83,6 +85,11 @@ const App: React.FC = () => {
     setJobs(initialJobs);
   }, []);
 
+  const handleLogin = (user: UserProfile) => {
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+  };
+
   const handleAddJob = (job: Partial<Job>) => {
     const date = job.jobDate || new Date().toISOString().split('T')[0];
     
@@ -99,7 +106,6 @@ const App: React.FC = () => {
       return;
     }
 
-    // Ensure no allocation data is present by default
     const newJob: Job = {
       ...job,
       id: job.id || `AE-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -107,14 +113,13 @@ const App: React.FC = () => {
       status: currentUser.role === UserRole.ADMIN ? JobStatus.ACTIVE : JobStatus.PENDING_ADD,
       createdAt: Date.now(),
       requesterId: currentUser.id,
-      assignedTo: 'Pending Allocation', // Clearly mark as unallocated
+      assignedTo: 'Pending Allocation', 
       priority: job.priority || 'Regular',
       confirmationStatus: job.confirmationStatus || 'tentative',
       description: job.description || 'N/A',
       shipmentDetails: job.shipmentDetails || 'N/A',
       jobDate: date,
       isLocked: false,
-      // Explicitly clear any accidentally passed allocation
       teamLeader: undefined,
       vehicle: undefined,
       writerCrew: undefined
@@ -178,9 +183,9 @@ const App: React.FC = () => {
       
       const newLimits = { ...prev.dailyJobLimits };
       if (!isHoliday) {
-        newLimits[date] = 0; // Set to 0 if marked as holiday
+        newLimits[date] = 0; 
       } else {
-        newLimits[date] = 10; // Default back if unmarked
+        newLimits[date] = 10;
       }
 
       return {
@@ -207,6 +212,10 @@ const App: React.FC = () => {
     const user: UserProfile = { ...newUser, id: `u-${Date.now()}` };
     setSystemUsers(prev => [...prev, user]);
   };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} systemUsers={systemUsers} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
@@ -253,22 +262,15 @@ const App: React.FC = () => {
             <div className="flex items-center gap-5 pl-8 border-l border-slate-200">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 leading-none mb-1.5">{currentUser.name}</p>
-                <select 
-                  className="text-[10px] text-blue-600 font-black bg-transparent border-none p-0 cursor-pointer outline-none hover:text-blue-700 transition-colors uppercase tracking-widest"
-                  onChange={(e) => {
-                    const selected = systemUsers.find(u => u.name === e.target.value);
-                    if (selected) {
-                      if (selected.status === 'Disabled') {
-                        alert("Account is disabled. Contact Admin.");
-                        return;
-                      }
-                      setCurrentUser(selected);
-                    }
-                  }}
-                  value={currentUser.name}
-                >
-                  {systemUsers.map(u => <option key={u.id} value={u.name} disabled={u.status === 'Disabled'}>{u.name} {u.status === 'Disabled' ? '(Disabled)' : ''}</option>)}
-                </select>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-blue-600 font-black uppercase tracking-widest leading-none">{currentUser.role}</span>
+                  <button 
+                    onClick={() => setIsAuthenticated(false)}
+                    className="text-[9px] text-slate-400 font-bold hover:text-rose-500 transition-colors uppercase tracking-widest"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
               <img src={currentUser.avatar} className="w-11 h-11 rounded-2xl border-2 border-slate-100 shadow-md transition-transform hover:scale-105" alt="User" />
             </div>

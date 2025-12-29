@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { UserProfile, UserRole } from '../types';
-import { UserPlus, ShieldAlert, ToggleLeft, ToggleRight, User, Fingerprint, Mail, CheckCircle, X } from 'lucide-react';
+import { UserPlus, ShieldAlert, ToggleLeft, ToggleRight, User, Fingerprint, Lock, CheckCircle, X, Key } from 'lucide-react';
 
 interface UserManagementProps {
   users: UserProfile[];
@@ -15,6 +15,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
   const [newUser, setNewUser] = useState({
     name: '',
     employeeId: '',
+    username: '',
+    password: '',
     role: UserRole.USER,
     status: 'Active' as const,
     avatar: `https://picsum.photos/seed/${Math.random()}/100`
@@ -32,8 +34,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUser.name || !newUser.employeeId) {
-      alert("Name and Employee ID are mandatory.");
+    if (!newUser.name || !newUser.employeeId || !newUser.username || !newUser.password) {
+      alert("All fields (Name, Employee ID, Username, Password) are mandatory.");
       return;
     }
     onAddUser(newUser);
@@ -41,6 +43,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
     setNewUser({
       name: '',
       employeeId: '',
+      username: '',
+      password: '',
       role: UserRole.USER,
       status: 'Active',
       avatar: `https://picsum.photos/seed/${Math.random()}/100`
@@ -69,6 +73,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
             <tr className="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
               <th className="p-6">Employee ID</th>
               <th className="p-6">User Details</th>
+              <th className="p-6">Login Username</th>
               <th className="p-6">Role</th>
               <th className="p-6">Status</th>
               <th className="p-6 text-center">Actions</th>
@@ -90,6 +95,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                       <p className="text-sm font-bold text-slate-800">{user.name}</p>
                       <p className="text-[10px] text-slate-400 font-medium">Writer Relocations Staff</p>
                     </div>
+                  </div>
+                </td>
+                <td className="p-6">
+                  <div className="flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                    <Key className="w-3.5 h-3.5" />
+                    {user.username}
                   </div>
                 </td>
                 <td className="p-6">
@@ -143,7 +154,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                  <h3 className="text-lg font-bold text-slate-800 uppercase tracking-widest">Create System Account</h3>
                  <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-6 h-6" /></button>
               </div>
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <form onSubmit={handleSubmit} className="p-8 space-y-5 max-h-[80vh] overflow-y-auto custom-scrollbar">
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1">Staff Full Name *</label>
                     <div className="relative">
@@ -152,12 +163,30 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                     </div>
                  </div>
                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1">Mandatory Employee ID *</label>
+                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1">Employee ID *</label>
                     <div className="relative">
                       <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                       <input required className="w-full p-3.5 pl-12 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-1 focus:ring-blue-500 font-medium" value={newUser.employeeId} onChange={e => setNewUser({...newUser, employeeId: e.target.value})} placeholder="e.g. WR-1005" />
                     </div>
                  </div>
+
+                 <div className="grid grid-cols-1 gap-5 pt-2 border-t border-slate-100">
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase text-blue-600 tracking-widest ml-1">Login Username *</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                        <input required className="w-full p-3.5 pl-12 bg-blue-50/30 border border-blue-100 rounded-xl outline-none focus:ring-1 focus:ring-blue-500 font-black text-slate-800" value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} placeholder="e.g. rsmith" />
+                      </div>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase text-blue-600 tracking-widest ml-1">Login Password *</label>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                        <input required type="text" className="w-full p-3.5 pl-12 bg-blue-50/30 border border-blue-100 rounded-xl outline-none focus:ring-1 focus:ring-blue-500 font-black text-slate-800" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="••••••••" />
+                      </div>
+                   </div>
+                 </div>
+
                  <div className="space-y-1.5">
                     <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest ml-1">Access Level</label>
                     <select className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value as UserRole})}>

@@ -33,6 +33,8 @@ export interface UserProfile {
   id: string;
   employeeId: string; // Mandatory
   name: string;
+  username: string; // Added for login
+  password: string; // Added for login
   role: UserRole;
   avatar: string;
   status: 'Active' | 'Disabled';
