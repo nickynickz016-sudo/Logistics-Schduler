@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Job, JobStatus, UserProfile, UserRole } from '../types';
+import { Job, JobStatus, UserProfile, UserRole, Priority } from '../types';
 import { Plus, Search, Filter, Trash2, MapPin, MoreVertical, Clock } from 'lucide-react';
 
 interface JobBoardProps {
@@ -13,7 +13,10 @@ interface JobBoardProps {
 export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onDeleteJob, currentUser }) => {
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState('');
-  const [newJob, setNewJob] = useState({ title: '', description: '', priority: 'LOW' as any, location: '' });
+  // Fix: Updated initial priority to 'Regular' to match type definition
+  const [newJob, setNewJob] = useState<{ title: string; description: string; priority: Priority; location: string }>({ 
+    title: '', description: '', priority: 'Regular', location: '' 
+  });
 
   const filteredJobs = jobs.filter(j => 
     (j.title.toLowerCase().includes(filter.toLowerCase()) || j.location.toLowerCase().includes(filter.toLowerCase())) &&
@@ -24,7 +27,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onDeleteJob,
     e.preventDefault();
     onAddJob(newJob);
     setShowModal(false);
-    setNewJob({ title: '', description: '', priority: 'LOW', location: '' });
+    setNewJob({ title: '', description: '', priority: 'Regular', location: '' });
   };
 
   return (
@@ -75,9 +78,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onDeleteJob,
             )}
             
             <div className="flex items-start justify-between mb-4">
+              {/* Fix: Updated priority comparison strings to match 'High Priority' and 'Priority VIP' */}
               <div className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${
-                job.priority === 'HIGH' ? 'bg-red-50 text-red-600' : 
-                job.priority === 'MEDIUM' ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-600'
+                job.priority === 'High Priority' ? 'bg-red-50 text-red-600' : 
+                job.priority === 'Priority VIP' ? 'bg-orange-50 text-orange-600' : 'bg-slate-50 text-slate-600'
               }`}>
                 {job.priority} Priority
               </div>
@@ -149,14 +153,15 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onDeleteJob,
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Priority</label>
+                  {/* Fix: Updated select options to match Priority type values */}
                   <select 
                     className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                     value={newJob.priority}
-                    onChange={e => setNewJob({...newJob, priority: e.target.value})}
+                    onChange={e => setNewJob({...newJob, priority: e.target.value as Priority})}
                   >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
+                    <option value="Regular">Regular</option>
+                    <option value="Priority VIP">Priority VIP</option>
+                    <option value="High Priority">High Priority</option>
                   </select>
                 </div>
               </div>

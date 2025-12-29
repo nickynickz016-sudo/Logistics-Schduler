@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Job, JobStatus, UserProfile } from '../types';
-import { Plus, X, Box, User, Clock, AlertCircle, Info } from 'lucide-react';
+import { Plus, X, Box, User, Clock, AlertCircle, Info, Phone } from 'lucide-react';
 
 interface WarehouseActivityProps {
   jobs: Job[];
@@ -16,6 +16,7 @@ export const WarehouseActivity: React.FC<WarehouseActivityProps> = ({ jobs, onAd
   const [newActivity, setNewActivity] = useState({
     id: '', // Job No.
     shipperName: '',
+    clientContact: '+971 ',
     jobDate: selectedDate
   });
 
@@ -30,14 +31,15 @@ export const WarehouseActivity: React.FC<WarehouseActivityProps> = ({ jobs, onAd
       isWarehouseActivity: true,
       jobDate: selectedDate,
       loadingType: 'Local Storage',
-      priority: 'MEDIUM',
+      // Fix: Updated priority from 'MEDIUM' to 'Priority VIP' to match Priority type
+      priority: 'Priority VIP',
       specialRequests: {
         handyman: false, manpower: false, overtime: false,
         documents: false, packingList: false, crateCertificate: false, walkThrough: false
       }
     });
     setShowModal(false);
-    setNewActivity({ id: '', shipperName: '', jobDate: selectedDate });
+    setNewActivity({ id: '', shipperName: '', clientContact: '+971 ', jobDate: selectedDate });
   };
 
   return (
@@ -112,14 +114,11 @@ export const WarehouseActivity: React.FC<WarehouseActivityProps> = ({ jobs, onAd
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">UNIT {activity.id}</span>
-                      {activity.status === JobStatus.PENDING_ADD && (
-                         <span className="text-[9px] font-bold bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full uppercase border border-amber-100">Authorization Pending</span>
-                      )}
                     </div>
                     <h4 className="font-bold text-2xl text-slate-800">{activity.shipperName}</h4>
                     <div className="flex items-center gap-6 mt-3 text-xs text-slate-400 font-bold uppercase tracking-tighter">
+                       <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-slate-300" /> {activity.clientContact}</span>
                        <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> Facility Reserved</span>
-                       <span className="flex items-center gap-2"><User className="w-4 h-4" /> Request # {activity.requesterId}</span>
                     </div>
                   </div>
                 </div>
@@ -155,6 +154,20 @@ export const WarehouseActivity: React.FC<WarehouseActivityProps> = ({ jobs, onAd
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Shipper Name *</label>
                 <input required type="text" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-1 focus:ring-blue-500 outline-none" value={newActivity.shipperName} onChange={e => setNewActivity({...newActivity, shipperName: e.target.value})} placeholder="e.g. Global Trade LLC" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Client Contact *</label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                     <span className="text-lg">🇦🇪</span>
+                     <span className="w-px h-4 bg-slate-200 ml-1"></span>
+                  </div>
+                  <input required type="tel" className="w-full px-5 py-3.5 pl-16 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:ring-1 focus:ring-blue-500 outline-none" value={newActivity.clientContact} onChange={e => {
+                      let val = e.target.value;
+                      if (!val.startsWith('+971 ')) val = '+971 ' + val.replace(/^\+971\s*/, '');
+                      setNewActivity({...newActivity, clientContact: val});
+                  }} />
+                </div>
               </div>
 
               <div className="flex items-center gap-4 p-5 bg-blue-50 rounded-2xl border border-blue-100">

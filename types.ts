@@ -13,7 +13,8 @@ export enum JobStatus {
 }
 
 export type LoadingType = 'Warehouse Removal' | 'Storage' | 'Local Storage' | 'Direct Loading' | 'Delivery';
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type Priority = 'Regular' | 'Priority VIP' | 'High Priority';
+export type ConfirmationStatus = 'tentative' | 'confirmed' | 'cancelled';
 
 export type MainCategory = 'Commercial' | 'Agent' | 'Private' | 'Corporate';
 export type SubCategory = 'Export' | 'Import' | 'Fine arts Installation';
@@ -57,10 +58,12 @@ export interface Job {
   id: string; // Job No.
   title: string;
   shipperName: string;
+  clientContact: string;
   location: string;
   shipmentDetails: string;
   description: string;
   priority: Priority;
+  confirmationStatus: ConfirmationStatus; // Added field
   agentName: string;
   loadingType: LoadingType;
   mainCategory: MainCategory;

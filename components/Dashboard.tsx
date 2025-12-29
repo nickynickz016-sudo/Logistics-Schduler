@@ -20,7 +20,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, settings, isAdmin })
     { label: 'Units Authorized', value: jobs.filter(j => j.status === JobStatus.ACTIVE).length, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50/50' },
     { label: 'Pending Pool', value: jobs.filter(j => j.status === JobStatus.PENDING_ADD).length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50/50' },
     { label: 'Operations Final', value: jobs.filter(j => j.status === JobStatus.COMPLETED).length, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50/50' },
-    { label: 'Critical Alerts', value: jobs.filter(j => j.priority === 'HIGH' && j.status === JobStatus.ACTIVE).length, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50/50' },
+    // Fix: Updated priority comparison from 'HIGH' to 'High Priority' to match type definition
+    { label: 'Critical Alerts', value: jobs.filter(j => j.priority === 'High Priority' && j.status === JobStatus.ACTIVE).length, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50/50' },
   ];
 
   return (

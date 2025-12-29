@@ -10,7 +10,7 @@ import { ImportClearance } from './components/ImportClearance';
 import { ResourceManager } from './components/ResourceManager';
 import { CapacityManager } from './components/CapacityManager';
 import { UserManagement } from './components/UserManagement';
-import { UserRole, Job, JobStatus, UserProfile, Personnel, Vehicle, SystemSettings } from './types';
+import { UserRole, Job, JobStatus, UserProfile, Personnel, Vehicle, SystemSettings, ConfirmationStatus } from './types';
 import { Bell, Search, Menu } from 'lucide-react';
 
 const INITIAL_USERS: UserProfile[] = [
@@ -51,10 +51,12 @@ const App: React.FC = () => {
         id: 'AE-9001',
         title: 'AE-9001',
         shipperName: 'Writer Relocations HQ',
+        clientContact: '+971 4 811 1111',
         location: 'Dubai South',
         shipmentDetails: 'Office Equipment',
         description: 'Internal HQ move',
-        priority: 'MEDIUM',
+        priority: 'Regular',
+        confirmationStatus: 'confirmed',
         agentName: 'Internal',
         loadingType: 'Warehouse Removal',
         mainCategory: 'Corporate',
@@ -84,7 +86,6 @@ const App: React.FC = () => {
   const handleAddJob = (job: Partial<Job>) => {
     const date = job.jobDate || new Date().toISOString().split('T')[0];
     
-    // Check if holiday
     if (settings.holidays.includes(date)) {
       alert("Cannot schedule jobs on a public holiday.");
       return;
@@ -98,6 +99,7 @@ const App: React.FC = () => {
       return;
     }
 
+    // Ensure no allocation data is present by default
     const newJob: Job = {
       ...job,
       id: job.id || `AE-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -105,18 +107,27 @@ const App: React.FC = () => {
       status: currentUser.role === UserRole.ADMIN ? JobStatus.ACTIVE : JobStatus.PENDING_ADD,
       createdAt: Date.now(),
       requesterId: currentUser.id,
-      assignedTo: job.assignedTo || 'Unassigned',
-      priority: job.priority || 'LOW',
+      assignedTo: 'Pending Allocation', // Clearly mark as unallocated
+      priority: job.priority || 'Regular',
+      confirmationStatus: job.confirmationStatus || 'tentative',
       description: job.description || 'N/A',
       shipmentDetails: job.shipmentDetails || 'N/A',
       jobDate: date,
       isLocked: false,
+      // Explicitly clear any accidentally passed allocation
+      teamLeader: undefined,
+      vehicle: undefined,
+      writerCrew: undefined
     } as Job;
     setJobs(prev => [newJob, ...prev]);
   };
 
   const handleUpdateJobAllocation = (jobId: string, allocation: { teamLeader: string, vehicle: string, writerCrew: string[] }) => {
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...allocation } : j));
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...allocation, assignedTo: allocation.teamLeader || 'Assigned' } : j));
+  };
+
+  const handleUpdateJobStatus = (jobId: string, status: ConfirmationStatus) => {
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, confirmationStatus: status } : j));
   };
 
   const handleToggleLock = (jobId: string) => {
@@ -141,7 +152,7 @@ const App: React.FC = () => {
     setJobs(prev => prev.map(j => {
       if (j.id === jobId) {
         if (j.status === JobStatus.PENDING_ADD) {
-          return approved ? { ...j, status: JobStatus.ACTIVE, ...allocation } : { ...j, status: JobStatus.REJECTED };
+          return approved ? { ...j, status: JobStatus.ACTIVE, ...allocation, assignedTo: allocation?.teamLeader || 'Assigned' } : { ...j, status: JobStatus.REJECTED };
         }
         if (j.status === JobStatus.PENDING_DELETE) {
           return approved ? null : { ...j, status: JobStatus.ACTIVE };
@@ -273,6 +284,7 @@ const App: React.FC = () => {
                 onAddJob={handleAddJob} 
                 onDeleteJob={handleDeleteJob}
                 onUpdateAllocation={handleUpdateJobAllocation}
+                onUpdateJobStatus={handleUpdateJobStatus}
                 onToggleLock={handleToggleLock}
                 currentUser={currentUser}
                 personnel={personnel}
